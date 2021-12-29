@@ -1,0 +1,3 @@
+subscription DeletedTodos($userId: ID!) {
+  deletedTodos(userId: $userId)
+}

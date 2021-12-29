@@ -1,0 +1,146 @@
+scalar Time
+scalar Upload
+
+type Query {
+  user(userId: ID!): User
+}
+
+type Mutation {
+  signup(input: SignupInput!): User
+  login(input: LoginInput!): String!
+  refreshToken(input: RefreshTokenInput!): String!
+  resetPassword: ResetPasswordMutation!
+  user(userId: ID!): UserMutation!
+}
+
+type Subscription {
+  createdTodos(userId: ID!): Todo!
+  updatedTodos(userId: ID!): Todo!
+  deletedTodos(userId: ID!): ID!
+}
+
+type ResetPasswordMutation {
+  initiate(input: InitiatePasswordResetInput!): Boolean!
+  confirm(input: ConfirmPasswordResetInput!): Boolean!
+}
+
+input InitiatePasswordResetInput {
+  username: String!
+}
+
+input ConfirmPasswordResetInput {
+  token: String!
+  password: String!
+}
+
+type PageInfo {
+  startCursor: ID
+  endCursor: ID
+  hasNextPage: Boolean!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  firstName: String
+  lastName: String
+  createdAt: Time!
+  updatedAt: Time
+
+  todo(todoId: ID!): Todo
+  todos(first: Int = 25, after: String): Todos
+}
+
+type TodoFile {
+  id: ID!
+  createdAt: Time!
+  updatedAt: Time
+}
+
+type Todo {
+  id: ID!
+  userId: ID!
+  title: String!
+  content: String
+  isDone: Boolean!
+  createdAt: Time!
+  updatedAt: Time
+
+  files: [TodoFile]
+}
+
+type Todos {
+  edges: [TodoEdge!]!
+  pageInfo: PageInfo!
+}
+
+type TodoEdge {
+  cursor: ID!
+  node: Todo
+}
+
+input SignupInput {
+  username: String!
+  password: String!
+  email: String!
+  firstName: String
+  lastName: String
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+input RefreshTokenInput {
+  token: String!
+}
+
+type UserMutation {
+  update(input: UserPatch!): User
+  delete: ID!
+
+  todos: TodosMutation!
+  todo(todoId: ID!): TodoMutation!
+}
+
+input UserPatch {
+  username: String
+  email: String
+  firstName: String
+  lastName: String
+  currentPassword: String
+  newPassword: String
+}
+
+input TodoInput {
+  title: String!
+  content: String
+  isDone: Boolean
+}
+
+type TodosMutation {
+  create(input: TodoInput!): Todo
+}
+
+type TodoFilesMutation {
+  create(file: Upload!): Todo
+}
+
+type TodoFileMutation {
+  delete: Todo
+}
+
+type TodoMutation {
+  update(patch: TodoPatch!): Todo
+  delete: ID!
+  files: TodoFilesMutation
+  file(fileId: ID!): TodoFileMutation
+}
+
+input TodoPatch {
+  title: String
+  content: String
+  isDone: Boolean
+}

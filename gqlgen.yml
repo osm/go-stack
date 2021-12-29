@@ -1,0 +1,97 @@
+schema:
+  - graphql/*.graphql
+
+exec:
+  filename: graphql/generated/generated.go
+  package: generated
+
+model:
+  filename: graphql/model/models_gen.go
+  package: model
+
+resolver:
+  layout: follow-schema
+  dir: graphql
+  package: graphql
+  filename_template: resolvers.go
+
+autobind:
+  - "github.com/osm/go-stack/graphql/model"
+
+models:
+  ID:
+    model: github.com/99designs/gqlgen/graphql.ID
+
+  Int:
+    model: github.com/99designs/gqlgen/graphql.Int64
+
+  ResetPasswordMutation:
+    fields:
+      initiate:
+        resolver: true
+      confirm:
+        resolver: true
+
+  User:
+    fields:
+      todo:
+        resolver: true
+      todos:
+        resolver: true
+
+  UsersMutation:
+    fields:
+      create:
+        resolver: true
+
+  UserMutation:
+    model: model.UserMutation
+    fields:
+      update:
+        resolver: true
+      delete:
+        resolver: true
+      changePassword:
+        resolver: true
+      todos:
+        resolver: true
+      todo:
+        resolver: true
+
+  Todo:
+    fields:
+      files:
+        resolver: true
+
+  TodosMutation:
+    model: model.TodosMutation
+    fields:
+      create:
+        resolver: true
+
+  TodoMutation:
+    model: model.TodoMutation
+    fields:
+      update:
+        resolver: true
+      delete:
+        resolver: true
+      file:
+        resolver: true
+      files:
+        resolver: true
+
+  TodoFilesMutation:
+    model: model.TodoFilesMutation
+    fields:
+      create:
+        resolver: true
+  
+  TodoFileMutation:
+    model: model.TodoFileMutation
+    fields:
+      delete:
+        resolver: true
+  
+  TodoFile:
+    model: model.TodoFile

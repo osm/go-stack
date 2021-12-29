@@ -1,0 +1,11 @@
+#import "../fragments/Todo.graphql"
+
+mutation UpdateTodo($userId: ID!, $todoId: ID!, $patch: TodoPatch!) {
+  user(userId: $userId) {
+    todo(todoId: $todoId) {
+      update(patch: $patch) {
+        ...Todo
+      }
+    }
+  }
+}

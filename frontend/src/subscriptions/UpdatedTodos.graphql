@@ -1,0 +1,7 @@
+#import "../fragments/Todo.graphql"
+
+subscription UpdatedTodos($userId: ID!) {
+  updatedTodos(userId: $userId) {
+    ...Todo
+  }
+}

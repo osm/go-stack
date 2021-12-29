@@ -1,0 +1,13 @@
+#import "../fragments/Todo.graphql"
+
+mutation DeleteTodoFile($userId: ID!, $todoId: ID!, $fileId: ID!) {
+  user(userId: $userId) {
+    todo(todoId: $todoId) {
+      file(fileId: $fileId) {
+        delete {
+          ...Todo
+        }
+      }
+    }
+  }
+}

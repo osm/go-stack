@@ -1,0 +1,13 @@
+#import "../fragments/Todo.graphql"
+
+mutation CreateTodoFile($userId: ID!, $todoId: ID!, $file: Upload!) {
+  user(userId: $userId) {
+    todo(todoId: $todoId) {
+      files {
+        create(file: $file) {
+          ...Todo
+        }
+      }
+    }
+  }
+}

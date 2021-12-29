@@ -1,0 +1,19 @@
+#import "../fragments/Todo.graphql"
+
+query ListTodos($userId: ID!, $first: Int, $after: String) {
+  user(userId: $userId) {
+    id
+
+    todos(first: $first, after: $after) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          ...Todo
+        }
+      }
+    }
+  }
+}

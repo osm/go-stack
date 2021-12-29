@@ -1,0 +1,10 @@
+#import "../fragments/Todo.graphql"
+
+query GetTodo($userId: ID!, $todoId: ID!) {
+  user(userId: $userId) {
+    id
+    todo(todoId: $todoId) {
+      ...Todo
+    }
+  }
+}

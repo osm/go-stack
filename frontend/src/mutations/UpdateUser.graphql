@@ -1,0 +1,7 @@
+mutation UpdateUser($userId: ID!, $input: UserPatch!) {
+  user(userId: $userId) {
+    update(input: $input) {
+      id
+    }
+  }
+}

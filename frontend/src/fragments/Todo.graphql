@@ -1,0 +1,14 @@
+fragment Todo on Todo {
+  id
+  title
+  content
+  isDone
+  createdAt
+  updatedAt
+
+  files {
+    id
+    createdAt
+    updatedAt
+  }
+}

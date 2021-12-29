@@ -1,0 +1,11 @@
+#import "../fragments/Todo.graphql"
+
+mutation CreateTodo($userId: ID!, $input: TodoInput!) {
+  user(userId: $userId) {
+    todos {
+      create(input: $input) {
+        ...Todo
+      }
+    }
+  }
+}

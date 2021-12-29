@@ -1,0 +1,7 @@
+mutation DeleteTodo($userId: ID!, $todoId: ID!) {
+  user(userId: $userId) {
+    todo(todoId: $todoId) {
+      delete
+    }
+  }
+}
