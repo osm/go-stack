@@ -1,4 +1,4 @@
-.PHONY: all gql frontend clean docker
+.PHONY: all gql frontend clean docker release
 
 all:
 	go build
@@ -18,3 +18,7 @@ clean:
 docker:
 	make clean
 	docker build .
+
+release:
+	cd frontend && yarn && yarn build
+	go build
