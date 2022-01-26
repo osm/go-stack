@@ -2,7 +2,9 @@ package router
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -21,7 +23,7 @@ import (
 type Router struct {
 	auth          *auth.Auth
 	fileUploadDir string
-	frontendDir   string
+	frontendFS    embed.FS
 	graphql       *handler.Server
 	pg            *postgres.Client
 	playground    bool
@@ -107,16 +109,21 @@ func NewRouter(opts ...Option) *chi.Mux {
 		})
 	}
 
-	if ro.frontendDir != "" {
-		r.Get("/main.js", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(ro.frontendDir, "main.js"))
-		})
-		r.Get("/main.js.LICENSE.txt", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(ro.frontendDir, "main.js.LICENSE.txt"))
-		})
-		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(ro.frontendDir, "index.html"))
-		})
+	files, _ := fs.ReadDir(ro.frontendFS, "frontend/dist")
+	if len(files) > 0 {
+		for _, f := range files {
+			n := f.Name()
+
+			if n == "index.html" {
+				r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+					http.ServeFile(w, r, filepath.Join("frontend", "dist", "index.html"))
+				})
+			} else {
+				r.Get("/"+n, func(w http.ResponseWriter, r *http.Request) {
+					http.ServeFile(w, r, filepath.Join("frontend", "dist", n))
+				})
+			}
+		}
 	}
 
 	return r

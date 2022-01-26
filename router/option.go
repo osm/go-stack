@@ -1,6 +1,8 @@
 package router
 
 import (
+	"embed"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 
 	"github.com/osm/go-stack/auth"
@@ -33,9 +35,9 @@ func WithPlayground() Option {
 	}
 }
 
-func WithFrontend(frontendDir string) Option {
+func WithFrontend(frontendFS embed.FS) Option {
 	return func(r *Router) {
-		r.frontendDir = frontendDir
+		r.frontendFS = frontendFS
 	}
 }
 

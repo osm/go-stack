@@ -18,8 +18,11 @@ import (
 	"github.com/osm/go-stack/router"
 )
 
-//go:embed migrations/*
+//go:embed migrations
 var migrationsFS embed.FS
+
+//go:embed frontend/dist
+var frontendFS embed.FS
 
 func main() {
 	jwtPrivateKey := flag.String(
@@ -36,11 +39,6 @@ func main() {
 		"jwt-issuer",
 		"go-stack",
 		"JWT issuer",
-	)
-	frontendDir := flag.String(
-		"frontend-dir",
-		"./frontend/dist",
-		"Frontend dir",
 	)
 	fileUploadDir := flag.String(
 		"file-upload-dir",
@@ -129,7 +127,7 @@ func main() {
 		router.WithAuth(auth),
 		router.WithPostgres(pg),
 		router.WithGraphql(gql),
-		router.WithFrontend(*frontendDir),
+		router.WithFrontend(frontendFS),
 		router.WithFileUploadDir(*fileUploadDir),
 	}
 	if *enablePlayground {
