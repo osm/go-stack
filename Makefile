@@ -1,3 +1,5 @@
+.PHONY: all gql frontend clean docker
+
 all:
 	go build
 
