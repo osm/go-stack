@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"net/url"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 type Option func(*Client)
 
-func WithConn(conn string) Option {
+func WithConn(conn string, migrationsFS embed.FS) Option {
 	return func(c *Client) {
 		var err error
 		u, err := url.Parse(conn)
@@ -53,7 +54,7 @@ func WithConn(conn string) Option {
 			panic(err)
 		}
 
-		if err = migrator.ToLatest(db, getRepository()); err != nil {
+		if err = migrator.ToLatest(db, getRepository(migrationsFS)); err != nil {
 			panic(err)
 		}
 

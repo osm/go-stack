@@ -13,7 +13,7 @@ require (
 	github.com/lib/pq v1.10.4
 	github.com/mailgun/mailgun-go/v4 v4.6.0
 	github.com/osm/flen v1.0.0
-	github.com/osm/migrator v1.0.1
+	github.com/osm/migrator v1.1.1
 	github.com/rs/cors v1.8.0
 	github.com/vektah/gqlparser/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3

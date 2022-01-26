@@ -1,15 +1,12 @@
 package postgres
 
 import (
-	"os"
-	"path/filepath"
+	"embed"
 
 	_ "github.com/lib/pq"
 	"github.com/osm/migrator/repository"
 )
 
-func getRepository() repository.Source {
-	workDir, _ := os.Getwd()
-	migrations := filepath.Join(workDir, "migrations")
-	return repository.FromFiles(migrations)
+func getRepository(migrationsFS embed.FS) repository.Source {
+	return repository.FromEmbedded(migrationsFS, "migrations")
 }

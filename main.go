@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"embed"
 	"flag"
 	"log"
 	"net/http"
@@ -16,6 +17,9 @@ import (
 	"github.com/osm/go-stack/redis"
 	"github.com/osm/go-stack/router"
 )
+
+//go:embed migrations/*
+var migrationsFS embed.FS
 
 func main() {
 	jwtPrivateKey := flag.String(
@@ -89,7 +93,7 @@ func main() {
 	)
 
 	pg := postgres.NewClient(
-		postgres.WithConn(*databaseURL),
+		postgres.WithConn(*databaseURL, migrationsFS),
 	)
 	defer pg.Close()
 
