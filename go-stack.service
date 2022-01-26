@@ -1,0 +1,11 @@
+[Unit]
+Description=go-stack
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart=/usr/local/bin/go-stack
+
+[Install]
+WantedBy=multi-user.target
