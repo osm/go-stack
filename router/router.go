@@ -113,14 +113,15 @@ func NewRouter(opts ...Option) *chi.Mux {
 	if len(files) > 0 {
 		for _, f := range files {
 			n := f.Name()
+			c, _ := ro.frontendFS.ReadFile(filepath.Join("frontend", "dist", n))
 
 			if n == "index.html" {
 				r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-					http.ServeFile(w, r, filepath.Join("frontend", "dist", "index.html"))
+					w.Write(c)
 				})
 			} else {
 				r.Get("/"+n, func(w http.ResponseWriter, r *http.Request) {
-					http.ServeFile(w, r, filepath.Join("frontend", "dist", n))
+					w.Write(c)
 				})
 			}
 		}
