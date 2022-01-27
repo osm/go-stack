@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"log"
 	"net/url"
 
 	"github.com/go-redis/redis/v8"
@@ -29,7 +30,7 @@ func WithConn(conn string) Option {
 
 		ctx := context.Background()
 		if _, err = c.conn.Ping(ctx).Result(); err != nil {
-			panic("unable to connect to redis")
+			log.Printf("unable to connect to redis, subscriptions will not work as expected")
 		}
 	}
 }
