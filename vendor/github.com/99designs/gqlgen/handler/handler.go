@@ -29,6 +29,7 @@ func GraphQL(exec graphql.ExecutableSchema, options ...Option) http.HandlerFunc 
 		Upgrader:              cfg.upgrader,
 		InitFunc:              cfg.websocketInitFunc,
 		KeepAlivePingInterval: cfg.connectionKeepAlivePingInterval,
+		PingPongInterval:      cfg.connectionPingPongInterval,
 	})
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -77,6 +78,7 @@ type Config struct {
 	upgrader                        websocket.Upgrader
 	websocketInitFunc               transport.WebsocketInitFunc
 	connectionKeepAlivePingInterval time.Duration
+	connectionPingPongInterval      time.Duration
 	recover                         graphql.RecoverFunc
 	errorPresenter                  graphql.ErrorPresenterFunc
 	fieldHooks                      []graphql.FieldMiddleware
@@ -210,6 +212,12 @@ func WebsocketKeepAliveDuration(duration time.Duration) Option {
 	}
 }
 
+func WebsocketPingPongDuration(duration time.Duration) Option {
+	return func(cfg *Config) {
+		cfg.connectionPingPongInterval = duration
+	}
+}
+
 // Add cache that will hold queries for automatic persisted queries (APQ)
 // Deprecated: switch to graphql/handler.New
 func EnablePersistedQueryCache(cache PersistedQueryCache) Option {
@@ -229,6 +237,7 @@ type apqAdapter struct {
 func (a apqAdapter) Get(ctx context.Context, key string) (value interface{}, ok bool) {
 	return a.PersistedQueryCache.Get(ctx, key)
 }
+
 func (a apqAdapter) Add(ctx context.Context, key string, value interface{}) {
 	a.PersistedQueryCache.Add(ctx, key, value.(string))
 }
