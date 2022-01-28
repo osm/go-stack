@@ -165,7 +165,7 @@ github.com/vektah/gqlparser/v2/lexer
 github.com/vektah/gqlparser/v2/parser
 github.com/vektah/gqlparser/v2/validator
 github.com/vektah/gqlparser/v2/validator/rules
-# golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
+# golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
 ## explicit; go 1.17
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
