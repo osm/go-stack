@@ -9,9 +9,9 @@ RUN yarn build
 FROM golang:1.17-alpine
 WORKDIR /go/src/app
 COPY . .
+RUN mkdir -p /go/src/app/frontend/dist
+COPY --from=0 /usr/src/app/dist/* /go/src/app/frontend/dist/
 RUN go get -d -v ./...
 RUN go install -v ./...
-RUN mkdir /frontend
-COPY --from=0 /usr/src/app/dist/* /frontend/
 
 ENTRYPOINT ["go-stack"]
