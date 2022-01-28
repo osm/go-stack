@@ -30,6 +30,12 @@ $ yarn
 $ yarn start:dev
 ```
 
+## Build release
+
+```sh
+GRAPHQL_URL=https://example.com GRAPHQL_WS_URL=https://example.com make release
+```
+
 ## Deploy to Heroku
 
 Follow the instructions below to deploy a Docker image of your stack to
