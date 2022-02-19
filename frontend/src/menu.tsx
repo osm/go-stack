@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl'
 import { useAuthContext } from './auth-provider'
 import EditUserButton from './edit-user-button'
 
-const Header: React.FC = () => {
+const Menu: React.FC = () => {
   const { userId, setToken } = useAuthContext()
 
   const [isOpen, setIsOpen] = React.useState<boolean>(false)
@@ -60,4 +60,4 @@ const Header: React.FC = () => {
   )
 }
 
-export default Header
+export default Menu
