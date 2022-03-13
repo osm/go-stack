@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -48,8 +50,16 @@ func NewRouter(opts ...Option) *chi.Mux {
 	if ro.auth != nil {
 		r.Use(ro.auth.Middleware())
 	}
+	r.Use(func(next http.Handler) http.Handler {
+		logger := middleware.RequestLogger(
+			&middleware.DefaultLogFormatter{
+				Logger:  log.New(os.Stdout, "", log.LstdFlags),
+				NoColor: true,
+			},
+		)
+		return logger(next)
 
-	r.Use(middleware.Logger)
+	})
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
