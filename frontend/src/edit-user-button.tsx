@@ -19,18 +19,16 @@ import {
 import userCurrentUserId from './use-current-user-id'
 import DeleteUserModal from './delete-user-modal'
 
+import { GetUserQuery, GetUserQueryVariables, UpdateUserMutation, UpdateUserMutationVariables } from './types'
 import QUERY from './queries/GetUser.graphql'
-import { GetUser, GetUserVariables } from './queries/__generated__/GetUser'
-
 import MUTATION from './mutations/UpdateUser.graphql'
-import { UpdateUser, UpdateUserVariables } from './mutations/__generated__/UpdateUser'
 
 const EditUserButton: React.FC = () => {
   const userId = userCurrentUserId()
 
-  const [mutate, { loading }] = useMutation<UpdateUser, UpdateUserVariables>(MUTATION)
+  const [mutate, { loading }] = useMutation<UpdateUserMutation, UpdateUserMutationVariables>(MUTATION)
 
-  const { data } = useQuery<GetUser, GetUserVariables>(QUERY, {
+  const { data } = useQuery<GetUserQuery, GetUserQueryVariables>(QUERY, {
     variables: !userId
       ? undefined
       : {

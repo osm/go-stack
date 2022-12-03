@@ -1,8 +1,7 @@
 import { ApolloCache } from '@apollo/client'
 
 import TodoFragment from './fragments/Todo.graphql'
-import { CreateTodo_user_todos_create } from './mutations/__generated__/CreateTodo'
-import { ListTodos_user_todos } from './queries/__generated__/ListTodos'
+import { Todo, Todos } from './types'
 
 const addTodoToCache = ({
   cache,
@@ -11,12 +10,12 @@ const addTodoToCache = ({
 }: {
   cache: ApolloCache<unknown>
   userId: string | null
-  data: CreateTodo_user_todos_create | null | undefined
+  data: Todo | null | undefined
 }): void => {
   cache.modify({
     id: cache.identify({ __typename: 'User', id: userId }),
     fields: {
-      todos(existing: ListTodos_user_todos) {
+      todos(existing: Todos) {
         const ref = cache.writeFragment({
           data,
           fragment: TodoFragment,

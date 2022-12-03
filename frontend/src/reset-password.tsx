@@ -6,13 +6,15 @@ import { FormattedMessage } from 'react-intl'
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap'
 
 import MUTATION from './mutations/ConfirmPasswordReset.graphql'
-import { ConfirmPasswordReset, ConfirmPasswordResetVariables } from './mutations/__generated__/ConfirmPasswordReset'
+import { ConfirmPasswordResetMutation, ConfirmPasswordResetMutationVariables } from './types'
 
 const ResetPasswordPage: React.FC = () => {
   const history = useHistory()
   const { token }: { token: string } = useParams()
 
-  const [mutate, { loading }] = useMutation<ConfirmPasswordReset, ConfirmPasswordResetVariables>(MUTATION)
+  const [mutate, { loading }] = useMutation<ConfirmPasswordResetMutation, ConfirmPasswordResetMutationVariables>(
+    MUTATION,
+  )
   const [error, setError] = React.useState<string | undefined>(undefined)
   const [newPassword, setNewPassword] = React.useState<string | undefined>(undefined)
   const [confirmNewPassword, setConfirmNewPassword] = React.useState<string | undefined>(undefined)

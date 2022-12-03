@@ -4,10 +4,12 @@ import { FormattedMessage } from 'react-intl'
 import { Button, Input, Form, FormGroup, Label } from 'reactstrap'
 
 import MUTATION from './mutations/InitiatePasswordReset.graphql'
-import { InitiatePasswordReset, InitiatePasswordResetVariables } from './mutations/__generated__/InitiatePasswordReset'
+import { InitiatePasswordResetMutation, InitiatePasswordResetMutationVariables } from './types'
 
 const ForgotPasswordPage: React.FC = () => {
-  const [mutate, { loading }] = useMutation<InitiatePasswordReset, InitiatePasswordResetVariables>(MUTATION)
+  const [mutate, { loading }] = useMutation<InitiatePasswordResetMutation, InitiatePasswordResetMutationVariables>(
+    MUTATION,
+  )
   const [error, setError] = React.useState<string | undefined>(undefined)
   const [username, setUsername] = React.useState<string | undefined>(undefined)
   const [instructionsSent, setInstructionsSent] = React.useState<boolean>(false)

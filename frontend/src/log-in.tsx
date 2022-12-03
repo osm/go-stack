@@ -7,13 +7,13 @@ import { Button, Form, FormGroup, Label, Input } from 'reactstrap'
 import { useAuthContext } from './auth-provider'
 
 import MUTATION from './mutations/Login.graphql'
-import { Login, LoginVariables } from './mutations/__generated__/Login'
+import { LoginMutation, LoginMutationVariables } from './types'
 
 const LoginPage: React.FC = () => {
   const history = useHistory()
   const { setToken } = useAuthContext()
 
-  const [mutate, { loading }] = useMutation<Login, LoginVariables>(MUTATION)
+  const [mutate, { loading }] = useMutation<LoginMutation, LoginMutationVariables>(MUTATION)
 
   const [username, setUsername] = React.useState<string | null>(null)
   const [password, setPassword] = React.useState<string | null>(null)

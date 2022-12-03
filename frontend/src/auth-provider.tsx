@@ -3,7 +3,7 @@ import jwt from 'jwt-decode'
 import { useMutation } from '@apollo/client'
 
 import MUTATION from './mutations/RefreshToken.graphql'
-import { RefreshToken, RefreshTokenVariables } from './mutations/__generated__/RefreshToken'
+import { RefreshTokenMutation, RefreshTokenMutationVariables } from './types'
 
 interface IAuthContext {
   token: string | null
@@ -36,7 +36,7 @@ const AuthProvider: React.FC = ({ children }: { children?: React.ReactNode }) =>
   const [token, setToken] = React.useState<string | null>(auth?.token ?? null)
   const [userId, setUserId] = React.useState<string | null>(auth?.userId ?? null)
 
-  const [mutate] = useMutation<RefreshToken, RefreshTokenVariables>(MUTATION)
+  const [mutate] = useMutation<RefreshTokenMutation, RefreshTokenMutationVariables>(MUTATION)
 
   React.useEffect(() => {
     if (token) {

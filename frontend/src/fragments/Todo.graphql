@@ -5,6 +5,7 @@ fragment Todo on Todo {
   isDone
   createdAt
   updatedAt
+  userId
 
   files {
     id

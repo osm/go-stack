@@ -8,13 +8,13 @@ import userCurrentUserId from './use-current-user-id'
 import { addTodoToCache } from './todo-cache'
 
 import MUTATION from './mutations/CreateTodo.graphql'
-import { CreateTodo, CreateTodoVariables } from './mutations/__generated__/CreateTodo'
+import { CreateTodoMutation, CreateTodoMutationVariables } from './types'
 
 const CreateTodoPage: React.FC = () => {
   const history = useHistory()
   const userId = userCurrentUserId()
 
-  const [mutate, { loading }] = useMutation<CreateTodo, CreateTodoVariables>(MUTATION, {
+  const [mutate, { loading }] = useMutation<CreateTodoMutation, CreateTodoMutationVariables>(MUTATION, {
     update: (cache, ret) => {
       addTodoToCache({
         cache,

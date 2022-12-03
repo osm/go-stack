@@ -10,19 +10,23 @@ import { deleteTodoFromCache } from './todo-cache'
 import download from './download'
 
 import QUERY from './queries/GetTodo.graphql'
-import { GetTodo, GetTodoVariables } from './queries/__generated__/GetTodo'
+import {
+  GetTodoQuery,
+  GetTodoQueryVariables,
+  DeleteTodoMutation,
+  DeleteTodoMutationVariables,
+  UpdateTodoMutation,
+  UpdateTodoMutationVariables,
+  CreateTodoFileMutation,
+  CreateTodoFileMutationVariables,
+  DeleteTodoFileMutation,
+  DeleteTodoFileMutationVariables,
+} from './types'
 
 import MUTATION_DELETE from './mutations/DeleteTodo.graphql'
-import { DeleteTodo, DeleteTodoVariables } from './mutations/__generated__/DeleteTodo'
-
 import MUTATION_UPDATE from './mutations/UpdateTodo.graphql'
-import { UpdateTodo, UpdateTodoVariables } from './mutations/__generated__/UpdateTodo'
-
 import MUTATION_CREATE_FILE from './mutations/CreateTodoFile.graphql'
-import { CreateTodoFile, CreateTodoFileVariables } from './mutations/__generated__/CreateTodoFile'
-
 import MUTATION_DELETE_FILE from './mutations/DeleteTodoFile.graphql'
-import { DeleteTodoFile, DeleteTodoFileVariables } from './mutations/__generated__/DeleteTodoFile'
 
 const EditTodo: React.FC = () => {
   const history = useHistory()
@@ -30,7 +34,7 @@ const EditTodo: React.FC = () => {
   const userId = useCurrentUserId()
   const { id: todoId }: { id: string } = useParams()
 
-  const { data } = useQuery<GetTodo, GetTodoVariables>(QUERY, {
+  const { data } = useQuery<GetTodoQuery, GetTodoQueryVariables>(QUERY, {
     skip: !userId || !todoId,
     variables: !userId
       ? undefined
@@ -42,15 +46,17 @@ const EditTodo: React.FC = () => {
   })
   const todo = data?.user?.todo
 
-  const [mutateDelete] = useMutation<DeleteTodo, DeleteTodoVariables>(MUTATION_DELETE, {
+  const [mutateDelete] = useMutation<DeleteTodoMutation, DeleteTodoMutationVariables>(MUTATION_DELETE, {
     update: (cache, ret) => {
       deleteTodoFromCache({ cache, id: ret?.data?.user?.todo?.delete })
     },
   })
-  const [mutateDeleteFile] = useMutation<DeleteTodoFile, DeleteTodoFileVariables>(MUTATION_DELETE_FILE)
+  const [mutateDeleteFile] = useMutation<DeleteTodoFileMutation, DeleteTodoFileMutationVariables>(MUTATION_DELETE_FILE)
 
-  const [mutateUpdate] = useMutation<UpdateTodo, UpdateTodoVariables>(MUTATION_UPDATE)
-  const [mutateCreateTodoFile] = useMutation<CreateTodoFile, CreateTodoFileVariables>(MUTATION_CREATE_FILE)
+  const [mutateUpdate] = useMutation<UpdateTodoMutation, UpdateTodoMutationVariables>(MUTATION_UPDATE)
+  const [mutateCreateTodoFile] = useMutation<CreateTodoFileMutation, CreateTodoFileMutationVariables>(
+    MUTATION_CREATE_FILE,
+  )
 
   const [error, setError] = React.useState<string | null>(null)
   const [title, setTitle] = React.useState<string>('')

@@ -5,12 +5,12 @@ import { FormattedMessage } from 'react-intl'
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap'
 
 import MUTATION from './mutations/Signup.graphql'
-import { Signup, SignupVariables } from './mutations/__generated__/Signup'
+import { SignupMutation, SignupMutationVariables } from './types'
 
 const SignUpPage: React.FC = () => {
   const history = useHistory()
 
-  const [mutate] = useMutation<Signup, SignupVariables>(MUTATION)
+  const [mutate] = useMutation<SignupMutation, SignupMutationVariables>(MUTATION)
 
   const [error, setError] = React.useState<string | undefined>(undefined)
   const [username, setUsername] = React.useState<string | undefined>(undefined)

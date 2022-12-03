@@ -8,20 +8,23 @@ import { FormattedMessage } from 'react-intl'
 import userCurrentUserId from './use-current-user-id'
 import { addTodoToCache, deleteTodoFromCache } from './todo-cache'
 
+import {
+  ListTodosQuery,
+  ListTodosQueryVariables,
+  UpdateTodoMutation,
+  UpdateTodoMutationVariables,
+  CreatedTodosSubscription,
+  CreatedTodosSubscriptionVariables,
+  UpdatedTodosSubscription,
+  UpdatedTodosSubscriptionVariables,
+  DeletedTodosSubscription,
+  DeletedTodosSubscriptionVariables,
+} from './types'
 import QUERY from './queries/ListTodos.graphql'
-import { ListTodos, ListTodosVariables } from './queries/__generated__/ListTodos'
-
 import MUTATION_UPDATE from './mutations/UpdateTodo.graphql'
-import { UpdateTodo, UpdateTodoVariables } from './mutations/__generated__/UpdateTodo'
-
 import SUBSCRIPTION_CREATED from './subscriptions/CreatedTodos.graphql'
-import { CreatedTodos, CreatedTodosVariables } from './subscriptions/__generated__/CreatedTodos'
-
 import SUBSCRIPTION_UPDATED from './subscriptions/UpdatedTodos.graphql'
-import { UpdatedTodos, UpdatedTodosVariables } from './subscriptions/__generated__/UpdatedTodos'
-
 import SUBSCRIPTION_DELETED from './subscriptions/DeletedTodos.graphql'
-import { DeletedTodos, DeletedTodosVariables } from './subscriptions/__generated__/DeletedTodos'
 
 const ListTodosPage: React.FC = () => {
   const intl = useIntl()
@@ -38,16 +41,16 @@ const ListTodosPage: React.FC = () => {
     loading,
     data: queryData,
     fetchMore,
-  } = useQuery<ListTodos, ListTodosVariables>(QUERY, {
+  } = useQuery<ListTodosQuery, ListTodosQueryVariables>(QUERY, {
     nextFetchPolicy: 'cache-first',
     notifyOnNetworkStatusChange: true,
     skip: !userId,
     variables,
   })
 
-  const [mutateUpdate] = useMutation<UpdateTodo, UpdateTodoVariables>(MUTATION_UPDATE)
+  const [mutateUpdate] = useMutation<UpdateTodoMutation, UpdateTodoMutationVariables>(MUTATION_UPDATE)
 
-  useSubscription<CreatedTodos, CreatedTodosVariables>(SUBSCRIPTION_CREATED, {
+  useSubscription<CreatedTodosSubscription, CreatedTodosSubscriptionVariables>(SUBSCRIPTION_CREATED, {
     skip: !userId,
     variables: !userId ? undefined : { userId },
     onSubscriptionData: ({ client, subscriptionData }) => {
@@ -59,12 +62,12 @@ const ListTodosPage: React.FC = () => {
     },
   })
 
-  useSubscription<UpdatedTodos, UpdatedTodosVariables>(SUBSCRIPTION_UPDATED, {
+  useSubscription<UpdatedTodosSubscription, UpdatedTodosSubscriptionVariables>(SUBSCRIPTION_UPDATED, {
     skip: !userId,
     variables: !userId ? undefined : { userId },
   })
 
-  useSubscription<DeletedTodos, DeletedTodosVariables>(SUBSCRIPTION_DELETED, {
+  useSubscription<DeletedTodosSubscription, DeletedTodosSubscriptionVariables>(SUBSCRIPTION_DELETED, {
     skip: !userId,
     variables: !userId ? undefined : { userId },
     onSubscriptionData: ({ client, subscriptionData }) => {

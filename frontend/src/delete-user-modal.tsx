@@ -6,12 +6,12 @@ import { Button, Modal, ModalBody, ModalHeader, ModalFooter } from 'reactstrap'
 import { useAuthContext } from './auth-provider'
 
 import MUTATION from './mutations/DeleteUser.graphql'
-import { DeleteUser, DeleteUserVariables } from './mutations/__generated__/DeleteUser'
+import { DeleteUserMutation, DeleteUserMutationVariables } from './types'
 
 const DeleteUserModal: React.FC = () => {
   const { userId, setToken } = useAuthContext()
 
-  const [mutate, { loading }] = useMutation<DeleteUser, DeleteUserVariables>(MUTATION)
+  const [mutate, { loading }] = useMutation<DeleteUserMutation, DeleteUserMutationVariables>(MUTATION)
 
   const [isOpen, setIsOpen] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
