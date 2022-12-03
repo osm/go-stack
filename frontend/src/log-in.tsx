@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory, Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { FormattedMessage } from 'react-intl'
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap'
@@ -10,7 +10,7 @@ import MUTATION from './mutations/Login.graphql'
 import { LoginMutation, LoginMutationVariables } from './types'
 
 const LoginPage: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const { setToken } = useAuthContext()
 
   const [mutate, { loading }] = useMutation<LoginMutation, LoginMutationVariables>(MUTATION)
@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
             },
     })
       .then((res) => setToken(res?.data?.login || ''))
-      .then(() => history.push('/'))
+      .then(() => navigate('/'))
       .catch((e) => setError(e.message))
   }
 

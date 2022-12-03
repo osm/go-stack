@@ -53,7 +53,7 @@ const ListTodosPage: React.FC = () => {
   useSubscription<CreatedTodosSubscription, CreatedTodosSubscriptionVariables>(SUBSCRIPTION_CREATED, {
     skip: !userId,
     variables: !userId ? undefined : { userId },
-    onSubscriptionData: ({ client, subscriptionData }) => {
+    onData: ({ client, subscriptionData }) => {
       addTodoToCache({
         cache: client.cache,
         userId,
@@ -70,7 +70,7 @@ const ListTodosPage: React.FC = () => {
   useSubscription<DeletedTodosSubscription, DeletedTodosSubscriptionVariables>(SUBSCRIPTION_DELETED, {
     skip: !userId,
     variables: !userId ? undefined : { userId },
-    onSubscriptionData: ({ client, subscriptionData }) => {
+    onData: ({ client, subscriptionData }) => {
       deleteTodoFromCache({ cache: client.cache, id: subscriptionData?.data?.deletedTodos })
     },
   })

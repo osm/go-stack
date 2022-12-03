@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { FormattedMessage } from 'react-intl'
 import { Button, Input, Form, FormGroup, Label } from 'reactstrap'
@@ -11,7 +11,7 @@ import MUTATION from './mutations/CreateTodo.graphql'
 import { CreateTodoMutation, CreateTodoMutationVariables } from './types'
 
 const CreateTodoPage: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const userId = userCurrentUserId()
 
   const [mutate, { loading }] = useMutation<CreateTodoMutation, CreateTodoMutationVariables>(MUTATION, {
@@ -43,7 +43,7 @@ const CreateTodoPage: React.FC = () => {
               },
             },
     })
-      .then(() => history.goBack())
+      .then(() => navigate(-1))
       .catch((e) => setError(e.message))
   }
 

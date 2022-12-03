@@ -1,6 +1,6 @@
 import React from 'react'
 import { useMutation } from '@apollo/client'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useParams } from 'react-router'
 import { FormattedMessage } from 'react-intl'
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap'
@@ -9,8 +9,8 @@ import MUTATION from './mutations/ConfirmPasswordReset.graphql'
 import { ConfirmPasswordResetMutation, ConfirmPasswordResetMutationVariables } from './types'
 
 const ResetPasswordPage: React.FC = () => {
-  const history = useHistory()
-  const { token }: { token: string } = useParams()
+  const navigate = useNavigate()
+  const { token } = useParams<{ token: string }>()
 
   const [mutate, { loading }] = useMutation<ConfirmPasswordResetMutation, ConfirmPasswordResetMutationVariables>(
     MUTATION,
@@ -23,16 +23,17 @@ const ResetPasswordPage: React.FC = () => {
     e.preventDefault()
 
     mutate({
-      variables: !newPassword
-        ? undefined
-        : {
-            input: {
-              token,
-              password: newPassword,
+      variables:
+        !newPassword || !token
+          ? undefined
+          : {
+              input: {
+                token,
+                password: newPassword,
+              },
             },
-          },
     })
-      .then(() => history.push('/login'))
+      .then(() => navigate('/login'))
       .catch((e) => setError(e.message))
   }
 

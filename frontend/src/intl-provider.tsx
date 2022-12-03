@@ -1,7 +1,9 @@
 import React from 'react'
 import { IntlProvider as ReactIntlProvider } from 'react-intl'
 
-const IntlProvider: React.FC = ({ children }: { children?: React.ReactNode }) => {
+const IntlProvider: React.FC<{
+  children?: React.ReactNode
+}> = ({ children }: { children?: React.ReactNode }) => {
   const urlSearchParams = new URLSearchParams(window.location.search)
   const params = Object.fromEntries(urlSearchParams.entries())
   const { locale: queryLocale } = params

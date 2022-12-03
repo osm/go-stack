@@ -1,7 +1,7 @@
 import React from 'react'
 import { useQuery, useMutation } from '@apollo/client'
 import { useParams } from 'react-router'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { FormattedMessage, useIntl } from 'react-intl'
 import { Button, Input, Form, FormGroup, Table, Label } from 'reactstrap'
 
@@ -29,19 +29,20 @@ import MUTATION_CREATE_FILE from './mutations/CreateTodoFile.graphql'
 import MUTATION_DELETE_FILE from './mutations/DeleteTodoFile.graphql'
 
 const EditTodo: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const intl = useIntl()
   const userId = useCurrentUserId()
-  const { id: todoId }: { id: string } = useParams()
+  const { id: todoId } = useParams<{ id: string }>()
 
   const { data } = useQuery<GetTodoQuery, GetTodoQueryVariables>(QUERY, {
     skip: !userId || !todoId,
-    variables: !userId
-      ? undefined
-      : {
-          userId,
-          todoId,
-        },
+    variables:
+      !userId || !todoId
+        ? undefined
+        : {
+            userId,
+            todoId,
+          },
     fetchPolicy: 'no-cache',
   })
   const todo = data?.user?.todo
@@ -75,19 +76,20 @@ const EditTodo: React.FC = () => {
     e.preventDefault()
 
     mutateUpdate({
-      variables: !userId
-        ? undefined
-        : {
-            userId,
-            todoId,
-            patch: {
-              title,
-              content,
-              isDone,
+      variables:
+        !userId || !todoId
+          ? undefined
+          : {
+              userId,
+              todoId,
+              patch: {
+                title,
+                content,
+                isDone,
+              },
             },
-          },
     })
-      .then(() => history.goBack())
+      .then(() => navigate(-1))
       .catch((e) => setError(e.message))
   }
 
@@ -95,14 +97,15 @@ const EditTodo: React.FC = () => {
     e.preventDefault()
 
     mutateDelete({
-      variables: !userId
-        ? undefined
-        : {
-            userId,
-            todoId,
-          },
+      variables:
+        !userId || !todoId
+          ? undefined
+          : {
+              userId,
+              todoId,
+            },
     })
-      .then(() => history.goBack())
+      .then(() => navigate(-1))
       .catch((e) => setError(e.message))
   }
 
@@ -204,13 +207,14 @@ const EditTodo: React.FC = () => {
 
               mutateCreateTodoFile({
                 refetchQueries: ['GetTodo'],
-                variables: !userId
-                  ? undefined
-                  : {
-                      userId,
-                      todoId,
-                      file: fileList[0],
-                    },
+                variables:
+                  !userId || !todoId
+                    ? undefined
+                    : {
+                        userId,
+                        todoId,
+                        file: fileList[0],
+                      },
               }).catch((e) => setError(e.message))
             }}
           />

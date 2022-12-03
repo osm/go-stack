@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 import CreateTodo from './create-todo'
 import EditTodo from './edit-todo'
@@ -21,29 +21,15 @@ const App: React.FC = () => {
       <Router>
         <Menu />
         <div className="container mt-4">
-          <Switch>
-            <Route exact path="/login">
-              <LogIn />
-            </Route>
-            <Route exact path="/create-todo">
-              <CreateTodo />
-            </Route>
-            <Route exact path="/forgot-password">
-              <ForgotPassword />
-            </Route>
-            <Route exact path="/reset-password/:token">
-              <ResetPassword />
-            </Route>
-            <Route exact path="/todo/:id">
-              <EditTodo />
-            </Route>
-            <Route exact path="/">
-              {userId ? <ListTodos /> : <SignUp />}
-            </Route>
-            <Route path="*">
-              <NotFound />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/login" element={<LogIn />} />
+            <Route path="/create-todo" element={<CreateTodo />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/todo/:id" element={<EditTodo />} />
+            <Route path="/" element={userId ? <ListTodos /> : <SignUp />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </div>
       </Router>
     </div>

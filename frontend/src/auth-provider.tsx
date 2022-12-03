@@ -30,7 +30,9 @@ const getAuth = (): IAuth => {
   return auth ?? { userId: undefined, token: undefined }
 }
 
-const AuthProvider: React.FC = ({ children }: { children?: React.ReactNode }) => {
+const AuthProvider: React.FC<{
+  children?: React.ReactNode
+}> = ({ children }: { children?: React.ReactNode }) => {
   const auth = getAuth()
 
   const [token, setToken] = React.useState<string | null>(auth?.token ?? null)

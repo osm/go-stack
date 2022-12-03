@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@apollo/client'
 import { FormattedMessage } from 'react-intl'
 import { Button, Form, FormFeedback, FormGroup, Input, Label } from 'reactstrap'
@@ -8,7 +8,7 @@ import MUTATION from './mutations/Signup.graphql'
 import { SignupMutation, SignupMutationVariables } from './types'
 
 const SignUpPage: React.FC = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const [mutate] = useMutation<SignupMutation, SignupMutationVariables>(MUTATION)
 
@@ -33,7 +33,7 @@ const SignUpPage: React.FC = () => {
               },
             },
     })
-      .then(() => history.push('/login'))
+      .then(() => navigate('/login'))
       .catch((e) => setError(e.message))
   }
 
