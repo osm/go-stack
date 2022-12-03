@@ -17,6 +17,7 @@ import (
 	"github.com/osm/go-stack/tools"
 )
 
+// Signup is the resolver for the signup field.
 func (r *mutationResolver) Signup(ctx context.Context, input model.SignupInput) (*model.User, error) {
 	inputData := tools.GetRequestData(ctx, &input)
 
@@ -27,6 +28,7 @@ func (r *mutationResolver) Signup(ctx context.Context, input model.SignupInput) 
 	return r.pg.InsertUser(ctx, inputData)
 }
 
+// Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (string, error) {
 	user, err := r.pg.GetUserPasswordByUsername(ctx, input.Username)
 	if err != nil || user == nil {
@@ -40,6 +42,7 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (s
 	return r.auth.GenerateJWT(user.ID), nil
 }
 
+// RefreshToken is the resolver for the refreshToken field.
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (string, error) {
 	details, err := r.auth.VerifyJWT(input.Token)
 	if err != nil {
@@ -49,14 +52,17 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, input model.Refresh
 	return r.auth.GenerateJWT(details.UserID), nil
 }
 
+// ResetPassword is the resolver for the resetPassword field.
 func (r *mutationResolver) ResetPassword(ctx context.Context) (*model.ResetPasswordMutation, error) {
 	return &model.ResetPasswordMutation{}, nil
 }
 
+// User is the resolver for the user field.
 func (r *mutationResolver) User(ctx context.Context, userID string) (*model.UserMutation, error) {
 	return &model.UserMutation{UserID: userID}, nil
 }
 
+// User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, userID string) (*model.User, error) {
 	if err := r.hasUserAccess(ctx, userID); err != nil {
 		return nil, err
@@ -65,6 +71,7 @@ func (r *queryResolver) User(ctx context.Context, userID string) (*model.User, e
 	return r.pg.GetUser(ctx, userID)
 }
 
+// Initiate is the resolver for the initiate field.
 func (r *resetPasswordMutationResolver) Initiate(ctx context.Context, obj *model.ResetPasswordMutation, input model.InitiatePasswordResetInput) (bool, error) {
 	user, err := r.pg.GetUserByUsername(ctx, input.Username)
 	if user == nil || err != nil {
@@ -88,6 +95,7 @@ func (r *resetPasswordMutationResolver) Initiate(ctx context.Context, obj *model
 	return true, nil
 }
 
+// Confirm is the resolver for the confirm field.
 func (r *resetPasswordMutationResolver) Confirm(ctx context.Context, obj *model.ResetPasswordMutation, input model.ConfirmPasswordResetInput) (bool, error) {
 	user, err := r.pg.GetUserByPasswordResetToken(ctx, input.Token)
 	if user == nil || err != nil {
@@ -107,6 +115,7 @@ func (r *resetPasswordMutationResolver) Confirm(ctx context.Context, obj *model.
 	return true, nil
 }
 
+// CreatedTodos is the resolver for the createdTodos field.
 func (r *subscriptionResolver) CreatedTodos(ctx context.Context, userID string) (<-chan *model.Todo, error) {
 	if err := r.hasUserAccess(ctx, userID); err != nil {
 		return nil, err
@@ -139,6 +148,7 @@ func (r *subscriptionResolver) CreatedTodos(ctx context.Context, userID string) 
 	return c, nil
 }
 
+// UpdatedTodos is the resolver for the updatedTodos field.
 func (r *subscriptionResolver) UpdatedTodos(ctx context.Context, userID string) (<-chan *model.Todo, error) {
 	if err := r.hasUserAccess(ctx, userID); err != nil {
 		return nil, err
@@ -171,6 +181,7 @@ func (r *subscriptionResolver) UpdatedTodos(ctx context.Context, userID string) 
 	return c, nil
 }
 
+// DeletedTodos is the resolver for the deletedTodos field.
 func (r *subscriptionResolver) DeletedTodos(ctx context.Context, userID string) (<-chan string, error) {
 	if err := r.hasUserAccess(ctx, userID); err != nil {
 		return nil, err
@@ -198,6 +209,7 @@ func (r *subscriptionResolver) DeletedTodos(ctx context.Context, userID string) 
 	return c, nil
 }
 
+// Files is the resolver for the files field.
 func (r *todoResolver) Files(ctx context.Context, obj *model.Todo) ([]*model.TodoFile, error) {
 	if err := r.hasTodoAccess(ctx, obj.UserID, obj.ID); err != nil {
 		return nil, err
@@ -206,6 +218,7 @@ func (r *todoResolver) Files(ctx context.Context, obj *model.Todo) ([]*model.Tod
 	return r.pg.GetTodoFiles(ctx, obj.ID)
 }
 
+// Delete is the resolver for the delete field.
 func (r *todoFileMutationResolver) Delete(ctx context.Context, obj *model.TodoFileMutation) (*model.Todo, error) {
 	if err := r.hasTodoAccess(ctx, obj.UserID, obj.TodoID); err != nil {
 		return nil, err
@@ -224,6 +237,7 @@ func (r *todoFileMutationResolver) Delete(ctx context.Context, obj *model.TodoFi
 	return t, nil
 }
 
+// Create is the resolver for the create field.
 func (r *todoFilesMutationResolver) Create(ctx context.Context, obj *model.TodoFilesMutation, file graphql.Upload) (*model.Todo, error) {
 	if err := r.hasTodoAccess(ctx, obj.UserID, obj.TodoID); err != nil {
 		return nil, err
@@ -252,6 +266,7 @@ func (r *todoFilesMutationResolver) Create(ctx context.Context, obj *model.TodoF
 	return todo, nil
 }
 
+// Update is the resolver for the update field.
 func (r *todoMutationResolver) Update(ctx context.Context, obj *model.TodoMutation, patch model.TodoPatch) (*model.Todo, error) {
 	if err := r.hasTodoAccess(ctx, obj.UserID, obj.TodoID); err != nil {
 		return nil, err
@@ -267,6 +282,7 @@ func (r *todoMutationResolver) Update(ctx context.Context, obj *model.TodoMutati
 	return todo, nil
 }
 
+// Delete is the resolver for the delete field.
 func (r *todoMutationResolver) Delete(ctx context.Context, obj *model.TodoMutation) (string, error) {
 	if err := r.hasTodoAccess(ctx, obj.UserID, obj.TodoID); err != nil {
 		return "", err
@@ -281,14 +297,17 @@ func (r *todoMutationResolver) Delete(ctx context.Context, obj *model.TodoMutati
 	return obj.TodoID, nil
 }
 
+// Files is the resolver for the files field.
 func (r *todoMutationResolver) Files(ctx context.Context, obj *model.TodoMutation) (*model.TodoFilesMutation, error) {
 	return &model.TodoFilesMutation{UserID: obj.UserID, TodoID: obj.TodoID}, nil
 }
 
+// File is the resolver for the file field.
 func (r *todoMutationResolver) File(ctx context.Context, obj *model.TodoMutation, fileID string) (*model.TodoFileMutation, error) {
 	return &model.TodoFileMutation{UserID: obj.UserID, TodoID: obj.TodoID, FileID: fileID}, nil
 }
 
+// Create is the resolver for the create field.
 func (r *todosMutationResolver) Create(ctx context.Context, obj *model.TodosMutation, input model.TodoInput) (*model.Todo, error) {
 	if err := r.hasUserAccess(ctx, obj.UserID); err != nil {
 		return nil, err
@@ -304,6 +323,7 @@ func (r *todosMutationResolver) Create(ctx context.Context, obj *model.TodosMuta
 	return todo, nil
 }
 
+// Todo is the resolver for the todo field.
 func (r *userResolver) Todo(ctx context.Context, obj *model.User, todoID string) (*model.Todo, error) {
 	if err := r.hasTodoAccess(ctx, obj.ID, todoID); err != nil {
 		return nil, err
@@ -312,6 +332,7 @@ func (r *userResolver) Todo(ctx context.Context, obj *model.User, todoID string)
 	return r.pg.GetTodo(ctx, todoID)
 }
 
+// Todos is the resolver for the todos field.
 func (r *userResolver) Todos(ctx context.Context, obj *model.User, first *int64, after *string) (*model.Todos, error) {
 	if err := r.hasUserAccess(ctx, obj.ID); err != nil {
 		return nil, err
@@ -320,6 +341,7 @@ func (r *userResolver) Todos(ctx context.Context, obj *model.User, first *int64,
 	return r.pg.GetTodosPaginated(ctx, obj.ID, *first, after)
 }
 
+// Update is the resolver for the update field.
 func (r *userMutationResolver) Update(ctx context.Context, obj *model.UserMutation, input model.UserPatch) (*model.User, error) {
 	if err := r.hasUserAccess(ctx, obj.UserID); err != nil {
 		return nil, err
@@ -348,6 +370,7 @@ func (r *userMutationResolver) Update(ctx context.Context, obj *model.UserMutati
 	return r.pg.UpdateUser(ctx, obj.UserID, patch)
 }
 
+// Delete is the resolver for the delete field.
 func (r *userMutationResolver) Delete(ctx context.Context, obj *model.UserMutation) (string, error) {
 	if err := r.hasUserAccess(ctx, obj.UserID); err != nil {
 		return "", err
@@ -360,10 +383,12 @@ func (r *userMutationResolver) Delete(ctx context.Context, obj *model.UserMutati
 	return obj.UserID, nil
 }
 
+// Todos is the resolver for the todos field.
 func (r *userMutationResolver) Todos(ctx context.Context, obj *model.UserMutation) (*model.TodosMutation, error) {
 	return &model.TodosMutation{UserID: obj.UserID}, nil
 }
 
+// Todo is the resolver for the todo field.
 func (r *userMutationResolver) Todo(ctx context.Context, obj *model.UserMutation, todoID string) (*model.TodoMutation, error) {
 	return &model.TodoMutation{
 		UserID: obj.UserID,

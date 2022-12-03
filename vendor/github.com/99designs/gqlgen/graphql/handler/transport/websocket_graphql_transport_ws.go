@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
+// https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md
 const (
 	graphqltransportwsSubprotocol = "graphql-transport-ws"
 
@@ -108,7 +108,7 @@ func (m graphqltransportwsMessage) toMessage() (message, error) {
 	case graphqltransportwsCompleteMsg:
 		t = stopMessageType
 	case graphqltransportwsPingMsg:
-		t = pingMesageType
+		t = pingMessageType
 	case graphqltransportwsPongMsg:
 		t = pongMessageType
 	}
@@ -139,7 +139,7 @@ func (m *graphqltransportwsMessage) fromMessage(msg *message) (err error) {
 		m.Type = graphqltransportwsCompleteMsg
 	case errorMessageType:
 		m.Type = graphqltransportwsErrorMsg
-	case pingMesageType:
+	case pingMessageType:
 		m.Type = graphqltransportwsPingMsg
 	case pongMessageType:
 		m.Type = graphqltransportwsPongMsg

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -21,6 +22,8 @@ type (
 	Websocket struct {
 		Upgrader              websocket.Upgrader
 		InitFunc              WebsocketInitFunc
+		InitTimeout           time.Duration
+		ErrorFunc             WebsocketErrorFunc
 		KeepAlivePingInterval time.Duration
 		PingPongInterval      time.Duration
 
@@ -40,10 +43,30 @@ type (
 		initPayload InitPayload
 	}
 
-	WebsocketInitFunc func(ctx context.Context, initPayload InitPayload) (context.Context, error)
+	WebsocketInitFunc  func(ctx context.Context, initPayload InitPayload) (context.Context, error)
+	WebsocketErrorFunc func(ctx context.Context, err error)
 )
 
-var _ graphql.Transport = Websocket{}
+var errReadTimeout = errors.New("read timeout")
+
+type WebsocketError struct {
+	Err error
+
+	// IsReadError flags whether the error occurred on read or write to the websocket
+	IsReadError bool
+}
+
+func (e WebsocketError) Error() string {
+	if e.IsReadError {
+		return fmt.Sprintf("websocket read: %v", e.Err)
+	}
+	return fmt.Sprintf("websocket write: %v", e.Err)
+}
+
+var (
+	_ graphql.Transport = Websocket{}
+	_ error             = WebsocketError{}
+)
 
 func (t Websocket) Supports(r *http.Request) bool {
 	return r.Header.Get("Upgrade") != ""
@@ -88,9 +111,52 @@ func (t Websocket) Do(w http.ResponseWriter, r *http.Request, exec graphql.Graph
 	conn.run()
 }
 
+func (c *wsConnection) handlePossibleError(err error, isReadError bool) {
+	if c.ErrorFunc != nil && err != nil {
+		c.ErrorFunc(c.ctx, WebsocketError{
+			Err:         err,
+			IsReadError: isReadError,
+		})
+	}
+}
+
+func (c *wsConnection) nextMessageWithTimeout(timeout time.Duration) (message, error) {
+	messages, errs := make(chan message, 1), make(chan error, 1)
+
+	go func() {
+		if m, err := c.me.NextMessage(); err != nil {
+			errs <- err
+		} else {
+			messages <- m
+		}
+	}()
+
+	select {
+	case m := <-messages:
+		return m, nil
+	case err := <-errs:
+		return message{}, err
+	case <-time.After(timeout):
+		return message{}, errReadTimeout
+	}
+}
+
 func (c *wsConnection) init() bool {
-	m, err := c.me.NextMessage()
+	var m message
+	var err error
+
+	if c.InitTimeout != 0 {
+		m, err = c.nextMessageWithTimeout(c.InitTimeout)
+	} else {
+		m, err = c.me.NextMessage()
+	}
+
 	if err != nil {
+		if err == errReadTimeout {
+			c.close(websocket.CloseProtocolError, "connection initialisation timeout")
+			return false
+		}
+
 		if err == errInvalidMsg {
 			c.sendConnectionError("invalid json")
 		}
@@ -135,9 +201,7 @@ func (c *wsConnection) init() bool {
 
 func (c *wsConnection) write(msg *message) {
 	c.mu.Lock()
-	// TODO: missing error handling here, err from previous implementation
-	// was ignored
-	_ = c.me.Send(msg)
+	c.handlePossibleError(c.me.Send(msg), false)
 	c.mu.Unlock()
 }
 
@@ -150,8 +214,9 @@ func (c *wsConnection) run() {
 		c.close(websocket.CloseAbnormalClosure, "unexpected closure")
 	}()
 
-	// Create a timer that will fire every interval to keep the connection alive.
-	if c.KeepAlivePingInterval != 0 {
+	// If we're running in graphql-ws mode, create a timer that will trigger a
+	// keep alive message every interval
+	if (c.conn.Subprotocol() == "" || c.conn.Subprotocol() == graphqlwsSubprotocol) && c.KeepAlivePingInterval != 0 {
 		c.mu.Lock()
 		c.keepAliveTicker = time.NewTicker(c.KeepAlivePingInterval)
 		c.mu.Unlock()
@@ -159,13 +224,15 @@ func (c *wsConnection) run() {
 		go c.keepAlive(ctx)
 	}
 
-	// Create a timer that will fire every interval a ping message that should
-	// receive a pong (SetPongHandler in init() function)
-	if c.PingPongInterval != 0 {
+	// If we're running in graphql-transport-ws mode, create a timer that will
+	// trigger a ping message every interval
+	if c.conn.Subprotocol() == graphqltransportwsSubprotocol && c.PingPongInterval != 0 {
 		c.mu.Lock()
 		c.pingPongTicker = time.NewTicker(c.PingPongInterval)
 		c.mu.Unlock()
 
+		// Note: when the connection is closed by this deadline, the client
+		// will receive an "invalid close code"
 		c.conn.SetReadDeadline(time.Now().UTC().Add(2 * c.PingPongInterval))
 		go c.ping(ctx)
 	}
@@ -178,7 +245,10 @@ func (c *wsConnection) run() {
 		start := graphql.Now()
 		m, err := c.me.NextMessage()
 		if err != nil {
-			// TODO: better error handling here
+			// If the connection got closed by us, don't report the error
+			if !errors.Is(err, net.ErrClosed) {
+				c.handlePossibleError(err, true)
+			}
 			return
 		}
 
@@ -195,7 +265,7 @@ func (c *wsConnection) run() {
 		case connectionCloseMessageType:
 			c.close(websocket.CloseNormalClosure, "terminated")
 			return
-		case pingMesageType:
+		case pingMessageType:
 			c.write(&message{t: pongMessageType, payload: m.payload})
 		case pongMessageType:
 			c.conn.SetReadDeadline(time.Now().UTC().Add(2 * c.PingPongInterval))
@@ -226,7 +296,7 @@ func (c *wsConnection) ping(ctx context.Context) {
 			c.pingPongTicker.Stop()
 			return
 		case <-c.pingPongTicker.C:
-			c.write(&message{t: pingMesageType, payload: json.RawMessage{}})
+			c.write(&message{t: pingMessageType, payload: json.RawMessage{}})
 		}
 	}
 }
@@ -308,12 +378,8 @@ func (c *wsConnection) subscribe(start time.Time, msg *message) {
 
 			c.sendResponse(msg.id, response)
 		}
-		c.complete(msg.id)
 
-		c.mu.Lock()
-		delete(c.active, msg.id)
-		c.mu.Unlock()
-		cancel()
+		// complete and context cancel comes from the defer
 	}()
 }
 

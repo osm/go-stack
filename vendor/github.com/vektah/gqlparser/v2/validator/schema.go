@@ -1,8 +1,7 @@
-//go:generate go run ./inliner/inliner.go
-
 package validator
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/vektah/gqlparser/v2/parser"
 )
 
-func LoadSchema(inputs ...*Source) (*Schema, *gqlerror.Error) {
+func LoadSchema(inputs ...*Source) (*Schema, error) {
 	ast, err := parser.ParseSchemas(inputs...)
 	if err != nil {
 		return nil, err
@@ -19,7 +18,7 @@ func LoadSchema(inputs ...*Source) (*Schema, *gqlerror.Error) {
 	return ValidateSchemaDocument(ast)
 }
 
-func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
+func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, error) {
 	schema := Schema{
 		Types:         map[string]*Definition{},
 		Directives:    map[string]*DirectiveDefinition{},
@@ -72,12 +71,32 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 				schema.AddImplements(def.Name, schema.Types[intf])
 			}
 			schema.AddPossibleType(def.Name, def)
+		case Interface:
+			for _, intf := range def.Interfaces {
+				schema.AddPossibleType(intf, def)
+				schema.AddImplements(def.Name, schema.Types[intf])
+			}
 		}
 	}
 
 	for i, dir := range ast.Directives {
 		if schema.Directives[dir.Name] != nil {
-			return nil, gqlerror.ErrorPosf(dir.Position, "Cannot redeclare directive %s.", dir.Name)
+			// While the spec says SDL must not (§3.5) explicitly define builtin
+			// scalars, it may (§3.13) define builtin directives. Here we check for
+			// that, and reject doubly-defined directives otherwise.
+			switch dir.Name {
+			case "include", "skip", "deprecated", "specifiedBy": // the builtins
+				// In principle here we might want to validate that the
+				// directives are the same. But they might not be, if the
+				// server has an older spec than we do. (Plus, validating this
+				// is a lot of work.) So we just keep the first one we saw.
+				// That's an arbitrary choice, but in theory the only way it
+				// fails is if the server is using features newer than this
+				// version of gqlparser, in which case they're in trouble
+				// anyway.
+			default:
+				return nil, gqlerror.ErrorPosf(dir.Position, "Cannot redeclare directive %s.", dir.Name)
+			}
 		}
 		schema.Directives[dir.Name] = ast.Directives[i]
 	}
@@ -87,6 +106,7 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 	}
 
 	if len(ast.Schema) == 1 {
+		schema.Description = ast.Schema[0].Description
 		for _, entrypoint := range ast.Schema[0].OperationTypes {
 			def := schema.Types[entrypoint.Type]
 			if def == nil {
@@ -120,18 +140,12 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 		}
 	}
 
-	for _, typ := range schema.Types {
-		err := validateDefinition(&schema, typ)
-		if err != nil {
-			return nil, err
-		}
+	if err := validateTypeDefinitions(&schema); err != nil {
+		return nil, err
 	}
 
-	for _, dir := range schema.Directives {
-		err := validateDirective(&schema, dir)
-		if err != nil {
-			return nil, err
-		}
+	if err := validateDirectiveDefinitions(&schema); err != nil {
+		return nil, err
 	}
 
 	// Inferred root operation type names should be performed only when a `schema` directive is
@@ -169,6 +183,36 @@ func ValidateSchemaDocument(ast *SchemaDocument) (*Schema, *gqlerror.Error) {
 	}
 
 	return &schema, nil
+}
+
+func validateTypeDefinitions(schema *Schema) *gqlerror.Error {
+	types := make([]string, 0, len(schema.Types))
+	for typ := range schema.Types {
+		types = append(types, typ)
+	}
+	sort.Strings(types)
+	for _, typ := range types {
+		err := validateDefinition(schema, schema.Types[typ])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateDirectiveDefinitions(schema *Schema) *gqlerror.Error {
+	directives := make([]string, 0, len(schema.Directives))
+	for directive := range schema.Directives {
+		directives = append(directives, directive)
+	}
+	sort.Strings(directives)
+	for _, directive := range directives {
+		err := validateDirective(schema, schema.Directives[directive])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func validateDirective(schema *Schema, def *DirectiveDefinition) *gqlerror.Error {
@@ -220,27 +264,34 @@ func validateDefinition(schema *Schema, def *Definition) *gqlerror.Error {
 	switch def.Kind {
 	case Object, Interface:
 		if len(def.Fields) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s must define one or more fields.", def.Kind)
+			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more fields.", def.Kind, def.Name)
 		}
 		for _, field := range def.Fields {
 			if typ, ok := schema.Types[field.Type.Name()]; ok {
 				if !isValidKind(typ.Kind, Scalar, Object, Interface, Union, Enum) {
-					return gqlerror.ErrorPosf(field.Position, "%s field must be one of %s.", def.Kind, kindList(Scalar, Object, Interface, Union, Enum))
+					return gqlerror.ErrorPosf(field.Position, "%s %s: field must be one of %s.", def.Kind, def.Name, kindList(Scalar, Object, Interface, Union, Enum))
 				}
 			}
 		}
 	case Enum:
 		if len(def.EnumValues) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s must define one or more unique enum values.", def.Kind)
+			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more unique enum values.", def.Kind, def.Name)
+		}
+		for _, value := range def.EnumValues {
+			for _, nonEnum := range [3]string{"true", "false", "null"} {
+				if value.Name == nonEnum {
+					return gqlerror.ErrorPosf(def.Position, "%s %s: non-enum value %s.", def.Kind, def.Name, value.Name)
+				}
+			}
 		}
 	case InputObject:
 		if len(def.Fields) == 0 {
-			return gqlerror.ErrorPosf(def.Position, "%s must define one or more input fields.", def.Kind)
+			return gqlerror.ErrorPosf(def.Position, "%s %s: must define one or more input fields.", def.Kind, def.Name)
 		}
 		for _, field := range def.Fields {
 			if typ, ok := schema.Types[field.Type.Name()]; ok {
 				if !isValidKind(typ.Kind, Scalar, Enum, InputObject) {
-					return gqlerror.ErrorPosf(field.Position, "%s field must be one of %s.", def.Kind, kindList(Scalar, Enum, InputObject))
+					return gqlerror.ErrorPosf(field.Position, "%s %s: field must be one of %s.", typ.Kind, field.Name, kindList(Scalar, Enum, InputObject))
 				}
 			}
 		}
@@ -327,7 +378,7 @@ func validateDirectives(schema *Schema, dirs DirectiveList, location DirectiveLo
 
 func validateImplements(schema *Schema, def *Definition, intfName string) *gqlerror.Error {
 	// see validation rules at the bottom of
-	// https://facebook.github.io/graphql/June2018/#sec-Objects
+	// https://facebook.github.io/graphql/October2021/#sec-Objects
 	intf := schema.Types[intfName]
 	if intf == nil {
 		return gqlerror.ErrorPosf(def.Position, "Undefined type %s.", strconv.Quote(intfName))
@@ -376,7 +427,40 @@ func validateImplements(schema *Schema, def *Definition, intfName string) *gqler
 			}
 		}
 	}
+	return validateTypeImplementsAncestors(schema, def, intfName)
+}
+
+// validateTypeImplementsAncestors
+// https://github.com/graphql/graphql-js/blob/47bd8c8897c72d3efc17ecb1599a95cee6bac5e8/src/type/validate.ts#L428
+func validateTypeImplementsAncestors(schema *Schema, def *Definition, intfName string) *gqlerror.Error {
+	intf := schema.Types[intfName]
+	if intf == nil {
+		return gqlerror.ErrorPosf(def.Position, "Undefined type %s.", strconv.Quote(intfName))
+	}
+	for _, transitive := range intf.Interfaces {
+		if !containsString(def.Interfaces, transitive) {
+			if transitive == def.Name {
+				return gqlerror.ErrorPosf(def.Position,
+					`Type %s cannot implement %s because it would create a circular reference.`,
+					def.Name, intfName,
+				)
+			}
+			return gqlerror.ErrorPosf(def.Position,
+				`Type %s must implement %s because it is implemented by %s.`,
+				def.Name, transitive, intfName,
+			)
+		}
+	}
 	return nil
+}
+
+func containsString(slice []string, want string) bool {
+	for _, str := range slice {
+		if want == str {
+			return true
+		}
+	}
+	return false
 }
 
 func isCovariant(schema *Schema, required *Type, actual *Type) bool {

@@ -1,18 +1,21 @@
 package codegen
 
 import (
+	"embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	"github.com/vektah/gqlparser/v2/ast"
-
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/99designs/gqlgen/codegen/templates"
+	"github.com/vektah/gqlparser/v2/ast"
 )
+
+//go:embed *.gotpl
+var codegenTemplates embed.FS
 
 func GenerateCode(data *Data) error {
 	if !data.Config.Exec.IsDefined() {
@@ -37,6 +40,7 @@ func generateSingleFile(data *Data) error {
 		RegionTags:      true,
 		GeneratedHeader: true,
 		Packages:        data.Config.Packages,
+		TemplateFS:      codegenTemplates,
 	})
 }
 
@@ -83,6 +87,7 @@ func generatePerSchema(data *Data) error {
 			RegionTags:      true,
 			GeneratedHeader: true,
 			Packages:        data.Config.Packages,
+			TemplateFS:      codegenTemplates,
 		})
 		if err != nil {
 			return err
@@ -132,7 +137,7 @@ func generateRootFile(data *Data) error {
 	_, thisFile, _, _ := runtime.Caller(0)
 	rootDir := filepath.Dir(thisFile)
 	templatePath := filepath.Join(rootDir, "root_.gotpl")
-	templateBytes, err := ioutil.ReadFile(templatePath)
+	templateBytes, err := os.ReadFile(templatePath)
 	if err != nil {
 		return err
 	}
@@ -146,6 +151,7 @@ func generateRootFile(data *Data) error {
 		RegionTags:      false,
 		GeneratedHeader: true,
 		Packages:        data.Config.Packages,
+		TemplateFS:      codegenTemplates,
 	})
 }
 

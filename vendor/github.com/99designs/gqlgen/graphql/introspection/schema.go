@@ -11,6 +11,13 @@ type Schema struct {
 	schema *ast.Schema
 }
 
+func (s *Schema) Description() *string {
+	if s.schema.Description == "" {
+		return nil
+	}
+	return &s.schema.Description
+}
+
 func (s *Schema) Types() []Type {
 	typeIndex := map[string]Type{}
 	typeNames := make([]string, 0, len(s.schema.Types))
@@ -70,7 +77,7 @@ func (s *Schema) directiveFromDef(d *ast.DirectiveDefinition) Directive {
 	for i, arg := range d.Arguments {
 		args[i] = InputValue{
 			Name:         arg.Name,
-			Description:  arg.Description,
+			description:  arg.Description,
 			DefaultValue: defaultValue(arg.DefaultValue),
 			Type:         WrapTypeFromType(s.schema, arg.Type),
 		}
@@ -78,7 +85,7 @@ func (s *Schema) directiveFromDef(d *ast.DirectiveDefinition) Directive {
 
 	return Directive{
 		Name:         d.Name,
-		Description:  d.Description,
+		description:  d.Description,
 		Locations:    locs,
 		Args:         args,
 		IsRepeatable: d.IsRepeatable,
