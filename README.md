@@ -36,21 +36,6 @@ $ yarn start:dev
 GRAPHQL_URL=https://example.com GRAPHQL_WS_URL=https://example.com make release
 ```
 
-## Deploy to Heroku
-
-Follow the instructions below to deploy a Docker image of your stack to
-Heroku.
-
-```sh
-$ docker build .
-$ export APP=foo
-$ heroku container:login
-$ heroku container:push \
-	--arg GRAPHQL_URL=https://$APP.herokuapp.com/graphql,GRAPHQL_WS_URL=wss://$APP.herokuapp.com/graphql \
-	web -a $APP
-$ heroku container:release web -a $APP
-```
-
 ## Run with let's encrypt
 
 Use the `-lets-encrypt-domain` and `-lets-encrypt-cert-dir` options to start
