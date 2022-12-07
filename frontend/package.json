@@ -8,7 +8,8 @@
     "lint": "eslint src/**/*.{js,jsx,tsx} && stylelint src/**/*.scss",
     "lint:fix": "eslint src/**/*.{js,jsx,ts,tsx} --fix && stylelint src/**/*.scss --fix",
     "type-check": "tsc --noEmit",
-    "start:dev": "webpack serve --config webpack.dev.config.ts"
+    "start:dev": "webpack serve --config webpack.dev.config.ts",
+    "upgrade-deps": "yarn-upgrade-all"
   },
   "dependencies": {
     "@apollo/client": "^3.7.1",
@@ -69,6 +70,7 @@
     "typescript": "^4.9.3",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0",
-    "webpack-dev-server": "^4.11.1"
+    "webpack-dev-server": "^4.11.1",
+    "yarn-upgrade-all": "^0.7.1"
   }
 }
