@@ -64,11 +64,7 @@ const App: React.FC = () => {
             />
             <Route
               path="/"
-              element={
-                <React.Suspense fallback={<>...</>}>
-                  {userId ? <ListTodos /> : <SignUp />}
-                </React.Suspense>
-              }
+              element={<React.Suspense fallback={<>...</>}>{userId ? <ListTodos /> : <SignUp />}</React.Suspense>}
             />
             <Route
               path="*"
