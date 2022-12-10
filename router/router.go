@@ -124,6 +124,7 @@ func NewRouter(opts ...Option) *chi.Mux {
 		for _, f := range files {
 			n := f.Name()
 			c, _ := ro.frontendFS.ReadFile(filepath.Join("frontend", "dist", n))
+			cgz, errgz := ro.frontendFS.ReadFile(filepath.Join("frontend", "dist", n+".gz"))
 
 			if n == "index.html" {
 				r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -131,7 +132,14 @@ func NewRouter(opts ...Option) *chi.Mux {
 				})
 			} else {
 				r.Get("/"+n, func(w http.ResponseWriter, r *http.Request) {
-					w.Write(c)
+					if errgz == nil && strings.Contains(
+						r.Header.Get("Accept-Encoding"), "gzip",
+					) {
+						w.Header().Set("Content-Encoding", "gzip")
+						w.Write(cgz)
+					} else {
+						w.Write(c)
+					}
 				})
 			}
 		}
