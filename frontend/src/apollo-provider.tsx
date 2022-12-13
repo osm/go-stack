@@ -10,32 +10,31 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 
 import { getAuth } from './auth-provider'
 
-const graphqlUrl = process.env.GRAPHQL_URL || 'http://localhost:4000/graphql'
-const graphqlWsUrl = process.env.GRAPHQL_WS_URL || 'ws://localhost:4000/graphql'
+const graphqlUrl = process.env.GRAPHQL_URL || null
+const graphqlWsUrl = process.env.GRAPHQL_WS_URL || null
 
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: graphqlWsUrl,
-    connectionParams: () => {
-      const { token } = getAuth()
-      return token ? { Authorization: `Bearer ${token}` } : {}
-    },
-  }),
-)
+const newSplitLink = () => {
+  const host = window.location.host.replace(/\/$/, '')
 
-const httpLink = createUploadLink({
-  uri: graphqlUrl,
-})
-
-const newSplitLink = () =>
-  split(
+  return split(
     ({ query }) => {
       const definition = getMainDefinition(query)
       return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
     },
-    wsLink,
-    httpLink,
+    new GraphQLWsLink(
+      createClient({
+        url: graphqlWsUrl || `ws://${host}/graphql`,
+        connectionParams: () => {
+          const { token } = getAuth()
+          return token ? { Authorization: `Bearer ${token}` } : {}
+        },
+      }),
+    ),
+    createUploadLink({
+      uri: graphqlUrl || '/graphql',
+    }),
   )
+}
 
 const authLink = setContext((_, { headers }) => {
   const { token } = getAuth()

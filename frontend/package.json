@@ -8,7 +8,7 @@
     "lint": "eslint src/**/*.{js,jsx,tsx} && stylelint src/**/*.scss",
     "lint:fix": "eslint src/**/*.{js,jsx,ts,tsx} --fix && stylelint src/**/*.scss --fix",
     "type-check": "tsc --noEmit",
-    "start:dev": "webpack serve --config webpack.dev.config.ts",
+    "start:dev": "GRAPHQL_URL=http://localhost:4000/graphql GRAPHQL_WS_URL=ws://localhost:4000/graphql webpack serve --host 0.0.0.0 --config webpack.dev.config.ts",
     "upgrade-deps": "yarn-upgrade-all"
   },
   "dependencies": {
