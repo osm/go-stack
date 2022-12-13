@@ -53,3 +53,9 @@ openssl pkey -in private.pem -pubout >public.pem
 base64 -w0 private.pem >private.pem.base64
 base64 -w0 public.pem >public.pem.base64
 ```
+
+## Cloudflare
+
+If you are using the Cloudflare DNS proxy and want to utilize the gzip
+compression in go-stack you will have to disable the Brotli compression in the
+Cloudflare control panel.
