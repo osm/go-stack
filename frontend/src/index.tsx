@@ -9,7 +9,7 @@ import ApolloProvider from './apollo-provider'
 import IntlProvider from './intl-provider'
 import App from './app'
 
-const container = document.getElementById('root')
+const container = document.getElementById('root')!
 const root = createRoot(container)
 
 root.render(
