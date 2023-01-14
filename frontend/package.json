@@ -12,7 +12,7 @@
     "upgrade-deps": "yarn-upgrade-all"
   },
   "dependencies": {
-    "@apollo/client": "^3.7.3",
+    "@apollo/client": "^3.7.4",
     "apollo-upload-client": "^17.0.0",
     "bootstrap": "^5.2.3",
     "graphql": "^16.6.0",
@@ -58,7 +58,7 @@
     "graphql-tag": "^2.12.6",
     "html-webpack-plugin": "^5.5.0",
     "node-sass": "^8.0.0",
-    "prettier": "^2.8.2",
+    "prettier": "^2.8.3",
     "prettier-stylelint": "^0.4.2",
     "sass-loader": "^13.2.0",
     "style-loader": "^3.3.1",
