@@ -58,7 +58,6 @@
     "graphql-tag": "^2.12.6",
     "html-webpack-plugin": "^5.5.0",
     "prettier": "^2.8.3",
-    "prettier-stylelint": "^0.4.2",
     "style-loader": "^3.3.1",
     "stylelint": "^14.16.1",
     "stylelint-config-standard": "^29.0.0",
