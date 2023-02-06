@@ -30,10 +30,6 @@ const config: Configuration = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
-      },
-      {
         test: /\.(graphql|gql)$/,
         exclude: /node_modules/,
         loader: 'graphql-tag/loader',
